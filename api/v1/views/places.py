@@ -1,14 +1,18 @@
 #!/usr/bin/python3
-"""places"""
+"""
+View for Place objects that handles all default RESTful API actions
+"""
 from api.v1.views import app_views
-from flask import jsonify, abort, request
+from flask import jsonify, abort, make_response, request
 from models import storage
 from models.place import Place
+from models.city import City
+from models.user import User
 
 
 def get_city_obj(city_id):
     '''Retrieve city object by id'''
-    city = storage.get("City", city_id)
+    city = storage.get(City, city_id)
     if not city:
         abort(404)
     return city
@@ -27,7 +31,7 @@ def list_places_of_city(city_id):
                  strict_slashes=False)
 def get_place(place_id):
     '''Retrieve a Place object by id'''
-    place = storage.get("Place", place_id)
+    place = storage.get(Place, place_id)
     if not place:
         abort(404)
     return jsonify(place.to_dict())
@@ -39,7 +43,7 @@ def create_place(city_id):
     '''Create a new Place'''
     city = get_city_obj(city_id)
     data = request.get_json()
-    if not data:
+    if data is None:
         abort(400, 'Not a JSON')
     if 'user_id' not in data:
         abort(400, 'Missing user_id')
@@ -47,10 +51,11 @@ def create_place(city_id):
         abort(400, 'Missing name')
 
     user_id = data['user_id']
-    if not storage.get("User", user_id):
+    if not storage.get(User, user_id):
         abort(404)
 
-    new_place = Place(name=data['name'], user_id=user_id, city_id=city_id)
+    new_place = Place(name=data['name'], user_id=user_id,
+                      city_id=city_id)
     storage.new(new_place)
     storage.save()
     return jsonify(new_place.to_dict()), 201
@@ -60,12 +65,12 @@ def create_place(city_id):
                  strict_slashes=False)
 def update_place(place_id):
     '''Update a Place object by id'''
-    place = storage.get("Place", place_id)
-    if not place:
+    place = storage.get(Place, place_id)
+    if place is None:
         abort(404)
 
     data = request.get_json()
-    if not data:
+    if data is None:
         abort(400, 'Not a JSON')
 
     for key in ['name', 'description', 'number_rooms', 'number_bathrooms',
@@ -81,9 +86,9 @@ def update_place(place_id):
                  strict_slashes=False)
 def delete_place(place_id):
     '''Delete a Place object by id'''
-    place = storage.get("Place", place_id)
-    if not place:
+    place = storage.get(Place, place_id)
+    if place is None:
         abort(404)
     storage.delete(place)
     storage.save()
-    return jsonify({}), 200
+    return make_response(jsonify({}), 200)
