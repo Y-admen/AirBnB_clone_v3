@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 """places"""
+from api.v1.views import app_views
 from flask import jsonify, abort, request
 from models import storage
 from models.place import Place
-from api.v1.views import app_views
 
 
 def get_city_obj(city_id):
@@ -14,7 +14,8 @@ def get_city_obj(city_id):
     return city
 
 
-@app_views.route('/cities/<city_id>/places')
+@app_views.route('/cities/<city_id>/places', methods=['GET'],
+                 strict_slashes=False)
 def list_places_of_city(city_id):
     '''Retrieve list of all Place objects in a city'''
     city = get_city_obj(city_id)
@@ -22,7 +23,8 @@ def list_places_of_city(city_id):
     return jsonify(list_places)
 
 
-@app_views.route('/places/<place_id>')
+@app_views.route('/places/<place_id>', methods=['GET'],
+                 strict_slashes=False)
 def get_place(place_id):
     '''Retrieve a Place object by id'''
     place = storage.get("Place", place_id)
@@ -31,7 +33,8 @@ def get_place(place_id):
     return jsonify(place.to_dict())
 
 
-@app_views.route('/cities/<city_id>/places', methods=['POST'])
+@app_views.route('/cities/<city_id>/places', methods=['POST'],
+                 strict_slashes=False)
 def create_place(city_id):
     '''Create a new Place'''
     city = get_city_obj(city_id)
@@ -53,7 +56,8 @@ def create_place(city_id):
     return jsonify(new_place.to_dict()), 201
 
 
-@app_views.route('/places/<place_id>', methods=['PUT'])
+@app_views.route('/places/<place_id>', methods=['PUT'],
+                 strict_slashes=False)
 def update_place(place_id):
     '''Update a Place object by id'''
     place = storage.get("Place", place_id)
@@ -73,7 +77,8 @@ def update_place(place_id):
     return jsonify(place.to_dict()), 200
 
 
-@app_views.route('/places/<place_id>', methods=['DELETE'])
+@app_views.route('/places/<place_id>', methods=['DELETE'],
+                 strict_slashes=False)
 def delete_place(place_id):
     '''Delete a Place object by id'''
     place = storage.get("Place", place_id)

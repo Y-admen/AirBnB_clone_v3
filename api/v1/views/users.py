@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 """users"""
-from flask import jsonify, abort, request
+from api.v1.views import app_views
+from flask import abort, jsonify, make_response, request
 from models import storage
 from models.user import User
-from api.v1.views import app_views
 
 
 @app_views.route('/users', methods=['GET'], strict_slashes=False)
@@ -25,17 +25,18 @@ def get_user(user_id):
 @app_views.route('/users/', methods=['POST'], strict_slashes=False)
 def create_user():
     '''Creates'''
-    if not request.get_json():
+    data = request.get_json()
+    if data is None:
         abort(400, 'Not a JSON')
     email = request.json.get('email')
     password = request.json.get('password')
-    if not email:
+    if 'email' not in data:
         abort(400, 'Missing email')
-    if not password:
+    if 'password' not in data:
         abort(400, 'Missing password')
     new_user = User(email=email, password=password)
-    storage.new(new_user)
-    storage.save()
+    user = User(**data)
+    user.save()
     return jsonify(new_user.to_dict()), 201
 
 
@@ -52,7 +53,7 @@ def update_user(user_id):
     for key, value in data.items():
         if key not in ignore_keys:
             setattr(user, key, value)
-    storage.save()
+    user.save()
     return jsonify(user.to_dict()), 200
 
 
